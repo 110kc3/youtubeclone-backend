@@ -8,8 +8,20 @@ const {
   Subscription,
 } = require("../sequelize");
 const asyncHandler = require("../middlewares/asyncHandler");
+const FastSpeedtest = require("fast-speedtest-api");
+
+let speedtest = new FastSpeedtest({
+    token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm", // required
+    verbose: false, // default: false
+    timeout: 10000, // default: 5000
+    https: true, // default: true
+    urlCount: 5, // default: 5
+    bufferSize: 8, // default: 8
+    unit: FastSpeedtest.UNITS.Mbps // default: Bps
+});
 
 exports.newVideo = asyncHandler(async (req, res, next) => {
+
   const video = await Video.create({
     ...req.body,
     userId: req.user.id,
@@ -18,7 +30,23 @@ exports.newVideo = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: video });
 });
 
+exports.getSpeed = asyncHandler(async (req, res, next) => {
+
+  //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
+  const speed = await speedtest.getSpeed();
+  console.log("Network speed: "+speed)
+
+  res.status(200).json({ success: true, data: speed });
+});
+
+
+
 exports.getVideo = asyncHandler(async (req, res, next) => {
+
+  //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
+  const speed = await speedtest.getSpeed();
+  console.log("Network speed: "+speed)
+  
   const video = await Video.findByPk(req.params.id, {
     include: [
       {
@@ -110,11 +138,34 @@ exports.getVideo = asyncHandler(async (req, res, next) => {
 
   const isVideoMine = req.user.id === video.userId;
 
+  console.log(video)
+
+  let new_url = video.dataValues.url.split("/");
+  let a = [];
+  
+  let quality;
+
+  if (speed > 100) {
+    quality = "q_100";
+  } else{ 
+    quality = "q_"+Math.round(speed);
+  } 
+
+  for (let i = 0; i <= new_url.length; i++){
+    if (i === 6) {
+      a.push(quality);
+    } else if(i<6){
+      a.push(new_url[i])
+    } else if (i > 6) {
+      a.push(new_url[i-1])
+    }
+  }
   // likesCount, disLikesCount, views
   video.setDataValue("comments", comments);
   video.setDataValue("commentsCount", commentsCount);
   video.setDataValue("isLiked", !!isLiked);
   video.setDataValue("isDisliked", !!isDisliked);
+  video.setDataValue("url",a.join("/"));
   video.setDataValue("likesCount", likesCount);
   video.setDataValue("dislikesCount", dislikesCount);
   video.setDataValue("views", views);
@@ -122,6 +173,7 @@ exports.getVideo = asyncHandler(async (req, res, next) => {
   video.setDataValue("isSubscribed", !!isSubscribed);
   video.setDataValue("isViewed", !!isViewed);
   video.setDataValue("subscribersCount", subscribersCount);
+  video.setDataValue("duration", video.dataValues.duration);
 
   res.status(200).json({ success: true, data: video });
 });
