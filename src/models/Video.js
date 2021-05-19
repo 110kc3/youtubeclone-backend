@@ -27,5 +27,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    bitrate: {
+      type: DataTypes.ARRAY(DataTypes.DECIMAL),
+      allowNull: false,
+    },
   });
 };

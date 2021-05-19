@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+var cloudinary = require('cloudinary').v2;
 const {
   User,
   Video,
@@ -11,20 +12,29 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const FastSpeedtest = require("fast-speedtest-api");
 
 let speedtest = new FastSpeedtest({
-    token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm", // required
-    verbose: false, // default: false
-    timeout: 10000, // default: 5000
-    https: true, // default: true
-    urlCount: 5, // default: 5
-    bufferSize: 8, // default: 8
-    unit: FastSpeedtest.UNITS.Mbps // default: Bps
+  token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm", // required
+  verbose: false, // default: false
+  timeout: 10000, // default: 5000
+  https: true, // default: true
+  urlCount: 5, // default: 5
+  bufferSize: 8, // default: 8
+  unit: FastSpeedtest.UNITS.Mbps // default: Bps
 });
 
 exports.newVideo = asyncHandler(async (req, res, next) => {
 
+  // const bitrate = [6669]
+  console.log(req.body)
+  // req.body.url;
+  // cloudinary.v2.api.resource(req.body.url)
+  //   .execute().then(result => console.log(result));
+  // cloudinary.v2.search.expression('public_id:f9vpz46zwaftef2up7xe')
+  //   .execute().then(result => console.log(result));
+
   const video = await Video.create({
     ...req.body,
     userId: req.user.id,
+    bitrate: Array.from(String(req.body.bitrate))
   });
 
   res.status(200).json({ success: true, data: video });
@@ -34,19 +44,37 @@ exports.getSpeed = asyncHandler(async (req, res, next) => {
 
   //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
   const speed = await speedtest.getSpeed();
-  console.log("Network speed: "+speed)
+  console.log("Network speed: " + speed)
 
   res.status(200).json({ success: true, data: speed });
 });
 
+exports.getBitrate = asyncHandler(async (req, res, next) => {
 
+  // const bitrate = [1]
+  // console.log("12345")
+
+
+
+  const video = await Video.findByPk(req.params.id);
+  if (!video) {
+    return next({
+      message: `No video found for ID - ${req.params.id}`,
+      statusCode: 404,
+    });
+  }
+
+  const bitrate = video.bitrate;
+
+  res.status(200).json({ success: true, data: bitrate });
+});
 
 exports.getVideo = asyncHandler(async (req, res, next) => {
 
   //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
   const speed = await speedtest.getSpeed();
-  console.log("Network speed: "+speed)
-  
+  console.log("Network speed: " + speed)
+
   const video = await Video.findByPk(req.params.id, {
     include: [
       {
@@ -142,22 +170,22 @@ exports.getVideo = asyncHandler(async (req, res, next) => {
 
   let new_url = video.dataValues.url.split("/");
   let a = [];
-  
+
   let quality;
 
   if (speed > 100) {
     quality = "q_100";
-  } else{ 
-    quality = "q_"+Math.round(speed);
-  } 
+  } else {
+    quality = "q_" + Math.round(speed);
+  }
 
-  for (let i = 0; i <= new_url.length; i++){
+  for (let i = 0; i <= new_url.length; i++) {
     if (i === 6) {
       a.push(quality);
-    } else if(i<6){
+    } else if (i < 6) {
       a.push(new_url[i])
     } else if (i > 6) {
-      a.push(new_url[i-1])
+      a.push(new_url[i - 1])
     }
   }
   // likesCount, disLikesCount, views
@@ -165,7 +193,7 @@ exports.getVideo = asyncHandler(async (req, res, next) => {
   video.setDataValue("commentsCount", commentsCount);
   video.setDataValue("isLiked", !!isLiked);
   video.setDataValue("isDisliked", !!isDisliked);
-  video.setDataValue("url",a.join("/"));
+  video.setDataValue("url", a.join("/"));
   video.setDataValue("likesCount", likesCount);
   video.setDataValue("dislikesCount", dislikesCount);
   video.setDataValue("views", views);

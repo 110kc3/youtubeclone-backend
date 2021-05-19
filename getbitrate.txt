@@ -1,0 +1,1 @@
+curl -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMxYTdiMjIxLWIwZjgtNDUzNC04ZDljLWJmNzBlOGY0NzVlNyIsImlhdCI6MTYyMTQ0Nzg1OSwiZXhwIjoxNjI0MDM5ODU5fQ.LGfrZq93E-L-e7cnNX9JwVACxP3ycTXNfAARup17uso" http://localhost:5000/api/v1/videos/1d404037-f86d-426e-bb3c-f9ce323e8a37/bitrate
