@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-var cloudinary = require('cloudinary').v2;
+var cloudinary = require("cloudinary").v2;
 const {
   User,
   Video,
@@ -18,13 +18,12 @@ let speedtest = new FastSpeedtest({
   https: true, // default: true
   urlCount: 5, // default: 5
   bufferSize: 8, // default: 8
-  unit: FastSpeedtest.UNITS.Mbps // default: Bps
+  unit: FastSpeedtest.UNITS.Mbps, // default: Bps
 });
 
 exports.newVideo = asyncHandler(async (req, res, next) => {
-
   // const bitrate = [6669]
-  console.log(req.body)
+  console.log(req.body);
   // req.body.url;
   // cloudinary.v2.api.resource(req.body.url)
   //   .execute().then(result => console.log(result));
@@ -34,28 +33,21 @@ exports.newVideo = asyncHandler(async (req, res, next) => {
   const video = await Video.create({
     ...req.body,
     userId: req.user.id,
-    bitrate: Array.from(String(req.body.bitrate))
+    bitrate: req.body.bitrate,
   });
 
   res.status(200).json({ success: true, data: video });
 });
 
 exports.getSpeed = asyncHandler(async (req, res, next) => {
-
   //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
   const speed = await speedtest.getSpeed();
-  console.log("Network speed: " + speed)
+  console.log("Network speed: " + speed);
 
   res.status(200).json({ success: true, data: speed });
 });
 
 exports.getBitrate = asyncHandler(async (req, res, next) => {
-
-  // const bitrate = [1]
-  // console.log("12345")
-
-
-
   const video = await Video.findByPk(req.params.id);
   if (!video) {
     return next({
@@ -70,10 +62,9 @@ exports.getBitrate = asyncHandler(async (req, res, next) => {
 });
 
 exports.getVideo = asyncHandler(async (req, res, next) => {
-
   //SPEED TEST NA PCOZATKU PUSZCZANIA FILMU
   const speed = await speedtest.getSpeed();
-  console.log("Network speed: " + speed)
+  console.log("Network speed: " + speed);
 
   const video = await Video.findByPk(req.params.id, {
     include: [
@@ -166,26 +157,20 @@ exports.getVideo = asyncHandler(async (req, res, next) => {
 
   const isVideoMine = req.user.id === video.userId;
 
-  console.log(video)
+  console.log(video);
 
   let new_url = video.dataValues.url.split("/");
   let a = [];
 
-  let quality;
-
-  if (speed > 100) {
-    quality = "q_100";
-  } else {
-    quality = "q_" + Math.round(speed);
-  }
+  let quality = "q_100";
 
   for (let i = 0; i <= new_url.length; i++) {
     if (i === 6) {
       a.push(quality);
     } else if (i < 6) {
-      a.push(new_url[i])
+      a.push(new_url[i]);
     } else if (i > 6) {
-      a.push(new_url[i - 1])
+      a.push(new_url[i - 1]);
     }
   }
   // likesCount, disLikesCount, views
