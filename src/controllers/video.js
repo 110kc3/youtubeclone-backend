@@ -14,22 +14,14 @@ const FastSpeedtest = require("fast-speedtest-api");
 let speedtest = new FastSpeedtest({
   token: "YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm", // required
   verbose: false, // default: false
-  timeout: 10000, // default: 5000
+  timeout: 2000, // default: 5000
   https: true, // default: true
-  urlCount: 5, // default: 5
-  bufferSize: 8, // default: 8
+  urlCount: 2, // default: 5
+  bufferSize: 1, // default: 8
   unit: FastSpeedtest.UNITS.Mbps, // default: Bps
 });
 
 exports.newVideo = asyncHandler(async (req, res, next) => {
-  // const bitrate = [6669]
-  console.log(req.body);
-  // req.body.url;
-  // cloudinary.v2.api.resource(req.body.url)
-  //   .execute().then(result => console.log(result));
-  // cloudinary.v2.search.expression('public_id:f9vpz46zwaftef2up7xe')
-  //   .execute().then(result => console.log(result));
-
   const video = await Video.create({
     ...req.body,
     userId: req.user.id,
